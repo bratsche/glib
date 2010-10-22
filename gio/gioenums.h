@@ -1235,6 +1235,12 @@ typedef enum
   G_APPLICATION_HANDLES_COMMAND_LINE = (1 << 3)
 } GApplicationFlags;
 
+typedef enum
+{
+  G_DIRECTION_FORWARD,
+  G_DIRECTION_REVERSE
+} GDirection;
+
 G_END_DECLS
 
 #endif /* __GIO_ENUMS_H__ */

@@ -117,6 +117,8 @@
 #include <gio/gtcpconnection.h>
 #include <gio/gthemedicon.h>
 #include <gio/gthreadedsocketservice.h>
+#include <gio/gtimeline.h>
+#include <gio/gtransitions.h>
 #include <gio/gvfs.h>
 #include <gio/gvolume.h>
 #include <gio/gvolumemonitor.h>

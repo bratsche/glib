@@ -12,6 +12,7 @@ noinst_PROGRAMS = $(TEST_PROGS) $(SAMPLE_PROGS)
 noinst_DATA = $(MISC_STUFF)
 
 progs_ldadd     = 					\
+	-lm						\
 	$(top_builddir)/glib/libglib-2.0.la 		\
 	$(top_builddir)/gthread/libgthread-2.0.la	\
 	$(top_builddir)/gobject/libgobject-2.0.la	\

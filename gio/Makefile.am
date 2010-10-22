@@ -380,6 +380,10 @@ libgio_2_0_la_SOURCES =		\
 	gthemedicon.c 		\
 	gthreadedresolver.c	\
 	gthreadedresolver.h	\
+	gtimeline.c		\
+	gtimeline.h		\
+	gtransitions.c		\
+	gtransitions.h		\
 	gunionvolumemonitor.c 	\
 	gunionvolumemonitor.h 	\
 	gvfs.c 			\
@@ -526,6 +530,8 @@ gio_headers =			\
 	gtcpconnection.h	\
 	gthreadedsocketservice.h\
 	gthemedicon.h 		\
+	gtimeline.h		\
+	gtransitions.h		\
 	gvfs.h 			\
 	gvolume.h 		\
 	gvolumemonitor.h 	\
@@ -588,6 +594,7 @@ gio_querymodules_LDADD	 = \
 	$(top_builddir)/gobject/libgobject-2.0.la	\
 	$(top_builddir)/gmodule/libgmodule-2.0.la	\
 	libgio-2.0.la					\
+	-lm						\
 	$(NULL)
 
 glib_compile_schemas_LDADD = $(top_builddir)/glib/libglib-2.0.la
@@ -600,6 +607,7 @@ glib_compile_schemas_SOURCES = \
 gsettings_LDADD = \
 	$(top_builddir)/glib/libglib-2.0.la		\
 	$(top_builddir)/gobject/libgobject-2.0.la	\
+	-lm						\
 	libgio-2.0.la
 gsettings_SOURCES = gsettings-tool.c
 
@@ -611,7 +619,8 @@ dist_schema_DATA = gschema.dtd
 
 bin_PROGRAMS += gdbus
 gdbus_SOURCES = gdbus-tool.c
-gdbus_LDADD = libgio-2.0.la \
+gdbus_LDADD = libgio-2.0.la				\
+	-lm						\
 	$(top_builddir)/glib/libglib-2.0.la 		\
 	$(top_builddir)/gobject/libgobject-2.0.la
 
