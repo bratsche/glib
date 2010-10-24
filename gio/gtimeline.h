@@ -42,6 +42,8 @@ typedef struct _GTimeline        GTimeline;
 typedef struct _GTimelinePrivate GTimelinePrivate;
 typedef struct _GTimelineClass   GTimelineClass;
 
+typedef void (* GTimelineTickFunc) (gdouble);
+
 struct _GTimeline
 {
   GObject parent_instance;

@@ -3,17 +3,18 @@
 #include "gtimeline.h"
 #include "glibintl.h"
 
-typedef struct _GTimelineTick GTimelineTick;
-
 struct _GTimelinePrivate
 {
   GPeriodic    *periodic;
   guint         id;
   guint         length;
   guint64       start_time;
+  guint64       last_tick;
+  guint64       goal_time;
 
   gboolean      repeat;
   GDirection    direction;
+  gfloat        progress;
 };
 
 enum {
@@ -158,25 +159,46 @@ g_timeline_init (GTimeline *timeline)
 }
 
 static void
+reset_time (GTimeline *timeline)
+{
+  GTimelinePrivate *priv = timeline->priv;
+  GDateTime *dt;
+  GTimeVal timeval;
+
+  dt = g_date_time_new_now_local ();
+  g_date_time_to_timeval (dt, &timeval);
+
+  priv->start_time = (timeval.tv_sec * 1000000 + timeval.tv_usec);
+  priv->last_tick = priv->start_time;
+
+  priv->goal_time  = priv->start_time + (priv->length * 1000 * (1.0 - priv->progress));
+}
+
+static void
 g_timeline_tick (GPeriodic *periodic,
 		 guint64    timestamp,
 		 gpointer   user_data)
 {
   GTimeline *timeline = G_TIMELINE (user_data);
   GTimelinePrivate *priv = timeline->priv;
-  gdouble progress;
   gdouble goal;
+  gdouble delta;
+  guint64 elapsed;
+  gdouble progress;
 
-  goal = priv->direction == G_DIRECTION_REVERSE ? 0.0 : 1.0;
+  elapsed = (timestamp - priv->last_tick);
+  delta = ((gdouble)elapsed / (priv->length * 1000));
 
-  progress = CLAMP (((gdouble)(timestamp - priv->start_time)) / (priv->length * 1000), 0., 1.);
+  priv->progress = CLAMP (priv->progress + delta, 0., 1.);
 
   if (priv->direction == G_DIRECTION_REVERSE)
-    progress = 1.0 - progress;
+    progress = 1.0 - priv->progress;
+  else
+    progress = priv->progress;
 
   g_signal_emit (timeline, signals[FRAME], 0, progress);
 
-  if (progress == goal)
+  if (priv->progress == 1.0)
     {
       if (priv->repeat)
 	{
@@ -186,8 +208,11 @@ g_timeline_tick (GPeriodic *periodic,
 	{
 	  g_timeline_stop (timeline);
 	  g_signal_emit (timeline, signals[FINISH], 0);
+          priv->progress = 0.;
 	}
     }
+
+  priv->last_tick = timestamp;
 }
 
 void
@@ -199,6 +224,8 @@ g_timeline_start (GTimeline *timeline)
   g_return_if_fail (timeline->priv->id == 0);
 
   priv = timeline->priv;
+
+  reset_time (timeline);
 
   priv->id = g_periodic_add (priv->periodic,
 			     g_timeline_tick,
@@ -224,20 +251,11 @@ g_timeline_stop (GTimeline *timeline)
 void
 g_timeline_reset (GTimeline *timeline)
 {
-  GTimelinePrivate *priv;
-  GDateTime *dt;
-  GTimeVal timeval;
-
   g_return_if_fail (G_IS_TIMELINE (timeline));
 
-  priv = timeline->priv;
+  reset_time (timeline);
 
-  dt = g_date_time_new_now_local ();
-  g_date_time_to_timeval (dt, &timeval);
-
-  priv->start_time = (timeval.tv_sec * 1000000 + timeval.tv_usec);
-
-  g_date_time_unref (dt);
+  timeline->priv->progress = 0.0;
 }
 
 GTimeline *
@@ -294,7 +312,12 @@ g_timeline_set_direction (GTimeline  *timeline,
   g_return_if_fail (G_IS_TIMELINE (timeline));
   g_return_if_fail (timeline->priv->id == 0);
 
-  timeline->priv->direction = direction;
+  if (timeline->priv->direction != direction)
+    {
+      timeline->priv->direction = direction;
+
+      timeline->priv->progress = 1.0 - timeline->priv->progress;
+    }
 }
 
 GDirection
