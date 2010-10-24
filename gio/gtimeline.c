@@ -10,7 +10,6 @@ struct _GTimelinePrivate
   guint         length;
   guint64       start_time;
   guint64       last_tick;
-  guint64       goal_time;
 
   gboolean      repeat;
   GDirection    direction;
@@ -170,8 +169,6 @@ reset_time (GTimeline *timeline)
 
   priv->start_time = (timeval.tv_sec * 1000000 + timeval.tv_usec);
   priv->last_tick = priv->start_time;
-
-  priv->goal_time  = priv->start_time + (priv->length * 1000 * (1.0 - priv->progress));
 }
 
 static void
